@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Admin</title></head>
+<body style="font-family:system-ui; max-width:900px; margin:20px auto;">
+  <h2>Admin</h2>
+  <a href="rankings.html">Rankings</a> |
+  <a href="#" onclick="localStorage.removeItem('auth');location.href='index.html'">Logout</a>
+
+  <h3>Add / Update Player</h3>
+  <div style="display:grid;gap:8px;grid-template-columns:1fr 1fr;">
+    <input id="playerId" placeholder="playerId (e.g. P001)">
+    <input id="fullName" placeholder="Full Name">
+    <input id="sportId" placeholder="sportId (e.g. S001)">
+    <input id="category" placeholder="Category (مبتدئ/متوسط/مسجل/مستوى عالي)">
+    <input id="achievements" placeholder="Achievements (محلي/دولي/قاري)">
+    <input id="parentEmail" placeholder="Parent Email">
+  </div>
+  <button id="savePlayer" style="margin-top:10px;padding:10px;">Save Player</button>
+  <p id="pmsg"></p>
+
+  <h3>Criteria (quick add)</h3>
+  <div style="display:grid;gap:8px;grid-template-columns:1fr 1fr;">
+    <input id="criterionId" placeholder="criterionId (e.g. C001)">
+    <input id="cSportId" placeholder="sportId">
+    <select id="ctype">
+      <option value="PHYSICAL">PHYSICAL</option>
+      <option value="SKILL">SKILL</option>
+      <option value="TACTICAL">TACTICAL</option>
+    </select>
+    <input id="metricName" placeholder="Metric name (e.g. Speed)">
+    <input id="minv" placeholder="Min" type="number">
+    <input id="maxv" placeholder="Max" type="number">
+    <input id="weight" placeholder="Weight" type="number" step="0.1">
+  </div>
+  <button id="saveCrit" style="margin-top:10px;padding:10px;">Save Criterion</button>
+  <p id="cmsg"></p>
+
+  <script src="app.js"></script>
+  <script>
+    const auth = requireRole(["ADMIN"]);
+
+    savePlayer.onclick = async () => {
+      pmsg.textContent = "Saving...";
+      try {
+        const player = {
+          playerId: playerId.value.trim(),
+          fullName: fullName.value.trim(),
+          sportId: sportId.value.trim(),
+          category: category.value.trim(),
+          achievements: achievements.value.trim(),
+          parentEmail: parentEmail.value.trim(),
+          createdAt: new Date().toISOString()
+        };
+        await jsonp("upsertPlayer", { ...auth, player });
+        pmsg.textContent = "Saved ✅";
+      } catch(e){ pmsg.textContent = e; }
+    };
+
+    saveCrit.onclick = async () => {
+      cmsg.textContent = "Saving...";
+      try {
+        const criterion = {
+          criterionId: criterionId.value.trim(),
+          sportId: cSportId.value.trim(),
+          type: ctype.value,
+          metricName: metricName.value.trim(),
+          min: Number(minv.value||0),
+          max: Number(maxv.value||0),
+          weight: Number(weight.value||1),
+          isActive: "TRUE"
+        };
+        await jsonp("upsertCriteria", { ...auth, criterion });
+        cmsg.textContent = "Saved ✅";
+      } catch(e){ cmsg.textContent = e; }
+    };
+  </script>
+</body>
+</html>
