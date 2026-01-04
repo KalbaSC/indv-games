@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Rankings</title></head>
+<body style="font-family:system-ui; max-width:900px; margin:20px auto;">
+  <h2>Rankings</h2>
+  <a href="index.html">Home</a>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+    <input id="sportId" placeholder="sportId (optional)">
+    <input id="from" type="date">
+    <input id="to" type="date">
+    <button onclick="load()">Load</button>
+  </div>
+
+  <table border="1" cellpadding="8" style="width:100%;margin-top:10px;border-collapse:collapse;">
+    <thead><tr><th>#</th><th>Player</th><th>Category</th><th>Points</th></tr></thead>
+    <tbody id="tb"></tbody>
+  </table>
+
+  <script src="app.js"></script>
+  <script>
+    async function load(){
+      const auth = getAuth() || {};
+      const data = await jsonp("getRankings", { ...auth, sportId: sportId.value.trim(), from: from.value, to: to.value });
+      tb.innerHTML = data.map((r,i)=>`<tr><td>${i+1}</td><td>${r.fullName}</td><td>${r.category||""}</td><td>${r.points}</td></tr>`).join("");
+    }
+  </script>
+</body>
+</html>
