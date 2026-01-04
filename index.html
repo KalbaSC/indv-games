@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>MVP Login</title>
+</head>
+<body style="font-family:system-ui; max-width:420px; margin:40px auto;">
+  <h2>Login</h2>
+  <input id="email" placeholder="Email" style="width:100%;padding:10px;margin:6px 0;">
+  <input id="pass" type="password" placeholder="Password" style="width:100%;padding:10px;margin:6px 0;">
+  <button id="btn" style="width:100%;padding:10px;">Sign in</button>
+  <p id="msg"></p>
+
+  <script src="app.js"></script>
+  <script>
+    btn.onclick = async () => {
+      msg.textContent = "Signing in...";
+      try {
+        const email = email.value.trim();
+        const password = pass.value.trim();
+        const u = await jsonp("login", { email, password });
+        saveAuth(email, password, u.role, u.sportId, u.parentPlayerId);
+
+        if (u.role === "ADMIN") location.href = "admin.html";
+        else if (u.role === "COACH") location.href = "coach.html";
+        else if (u.role === "PARENT") location.href = "parent.html";
+        else location.href = "rankings.html";
+      } catch (e) {
+        msg.textContent = e;
+      }
+    };
+  </script>
+</body>
+</html>
