@@ -13,23 +13,32 @@
   <p id="msg"></p>
 
   <script src="app.js"></script>
-  <script>
-    btn.onclick = async () => {
-      msg.textContent = "Signing in...";
-      try {
-        const email = email.value.trim();
-        const password = pass.value.trim();
-        const u = await jsonp("login", { email, password });
-        saveAuth(email, password, u.role, u.sportId, u.parentPlayerId);
+<script>
+  const elEmail = document.getElementById("email");
+  const elPass  = document.getElementById("pass");
+  const elBtn   = document.getElementById("btn");
+  const elMsg   = document.getElementById("msg");
 
-        if (u.role === "ADMIN") location.href = "admin.html";
-        else if (u.role === "COACH") location.href = "coach.html";
-        else if (u.role === "PARENT") location.href = "parent.html";
-        else location.href = "rankings.html";
-      } catch (e) {
-        msg.textContent = e;
-      }
-    };
-  </script>
+  elBtn.onclick = async () => {
+    elMsg.textContent = "Signing in...";
+    try {
+      const emailVal = elEmail.value.trim();
+      const passVal  = elPass.value.trim();
+
+      const u = await jsonp("login", { email: emailVal, password: passVal });
+
+      saveAuth(emailVal, passVal, u.role, u.sportId, u.parentPlayerId);
+
+      if (u.role === "ADMIN") location.href = "admin.html";
+      else if (u.role === "COACH") location.href = "coach.html";
+      else if (u.role === "PARENT") location.href = "parent.html";
+      else location.href = "rankings.html";
+
+    } catch (e) {
+      elMsg.textContent = String(e);
+    }
+  };
+</script>
+
 </body>
 </html>
