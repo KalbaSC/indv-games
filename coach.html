@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Coach</title></head>
+<body style="font-family:system-ui; max-width:900px; margin:20px auto;">
+  <h2>Coach</h2>
+  <a href="rankings.html">Rankings</a> |
+  <a href="#" onclick="localStorage.removeItem('auth');location.href='index.html'">Logout</a>
+
+  <h3>Players</h3>
+  <button onclick="loadPlayers()">Load Players</button>
+  <select id="players" style="width:100%;padding:10px;margin-top:8px;"></select>
+
+  <h3>Attendance</h3>
+  <input id="adate" type="date">
+  <select id="astatus"><option value="PRESENT">PRESENT</option><option value="ABSENT">ABSENT</option></select>
+  <button id="saveAtt">Save Attendance</button>
+  <p id="amsg"></p>
+
+  <h3>Assessment</h3>
+  <input id="sdate" type="date">
+  <select id="stype">
+    <option value="PHYSICAL">PHYSICAL</option>
+    <option value="SKILL">SKILL</option>
+    <option value="TACTICAL">TACTICAL</option>
+  </select>
+  <textarea id="scores" rows="4" style="width:100%;margin-top:8px;" placeholder='JSON scores e.g. {"Speed":8,"Accuracy":6}'></textarea>
+  <input id="notes" placeholder="Notes" style="width:100%;padding:10px;margin-top:8px;">
+  <button id="saveAs">Save Assessment</button>
+  <p id="smsg"></p>
+
+  <h3>Coach Report</h3>
+  <input id="rdate" type="date">
+  <select id="rperiod">
+    <option value="DAILY">DAILY</option>
+    <option value="WEEKLY">WEEKLY</option>
+    <option value="MONTHLY">MONTHLY</option>
+  </select>
+  <input id="tech" placeholder="Technical level" style="width:100%;padding:10px;margin-top:8px;">
+  <textarea id="summary" rows="3" style="width:100%;margin-top:8px;" placeholder="Summary"></textarea>
+  <textarea id="reco" rows="2" style="width:100%;margin-top:8px;" placeholder="Recommendations"></textarea>
+  <button id="saveRep">Save Report</button>
+  <p id="rmsg"></p>
+
+  <h3>Tournament Result (points auto)</h3>
+  <input id="tournamentId" placeholder="tournamentId">
+  <input id="placement" placeholder="placement (1/2/3)" type="number">
+  <button id="saveRes">Save Result</button>
+  <p id="tmsg"></p>
+
+  <script src="app.js"></script>
+  <script>
+    const auth = requireRole(["COACH","ADMIN"]);
+
+    async function loadPlayers(){
+      const list = await jsonp("getPlayers", { ...auth, sportId: auth.sportId });
+      players.innerHTML = list.map(p => `<option value="${p.playerId}">${p.playerId} - ${p.fullName}</option>`).join("");
+    }
+
+    saveAtt.onclick = async () => {
+      amsg.textContent = "Saving...";
+      try{
+        await jsonp("saveAttendance", { ...auth, attendance:{
+          date: adate.value, playerId: players.value, status: astatus.value, notes:""
+        }});
+        amsg.textContent="Saved ✅";
+      }catch(e){amsg.textContent=e;}
+    };
+
+    saveAs.onclick = async () => {
+      smsg.textContent="Saving...";
+      try{
+        const sc = JSON.parse(scores.value || "{}");
+        const total = Object.values(sc).reduce((a,b)=>a+Number(b||0),0);
+        await jsonp("saveAssessment", { ...auth, assessment:{
+          date: sdate.value, playerId: players.value, type: stype.value,
+          scores: sc, totalScore: total, notes: notes.value
+        }});
+        smsg.textContent="Saved ✅";
+      }catch(e){smsg.textContent=e;}
+    };
+
+    saveRep.onclick = async () => {
+      rmsg.textContent="Saving...";
+      try{
+        await jsonp("saveReport", { ...auth, report:{
+          date: rdate.value, period: rperiod.value, playerId: players.value,
+          summary: summary.value, technicalLevel: tech.value, recommendations: reco.value
+        }});
+        rmsg.textContent="Saved ✅";
+      }catch(e){rmsg.textContent=e;}
+    };
+
+    saveRes.onclick = async () => {
+      tmsg.textContent="Saving...";
+      try{
+        const out = await jsonp("saveResult", { ...auth, result:{
+          tournamentId: tournamentId.value.trim(),
+          playerId: players.value,
+          placement: Number(placement.value||0)
+        }});
+        tmsg.textContent = `Saved ✅ Points: ${out.points}`;
+      }catch(e){tmsg.textContent=e;}
+    };
+  </script>
+</body>
+</html>
