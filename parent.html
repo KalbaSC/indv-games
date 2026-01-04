@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Parent</title></head>
+<body style="font-family:system-ui; max-width:900px; margin:20px auto;">
+  <h2>Parent View</h2>
+  <a href="#" onclick="localStorage.removeItem('auth');location.href='index.html'">Logout</a>
+
+  <button onclick="load()">Load My Child</button>
+  <pre id="out" style="background:#f6f6f6;padding:12px;overflow:auto;"></pre>
+
+  <script src="app.js"></script>
+  <script>
+    const auth = requireRole(["PARENT","ADMIN","MGMT"]);
+    async function load(){
+      const data = await jsonp("getParentView", { ...auth, playerId: auth.parentPlayerId });
+      out.textContent = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>
